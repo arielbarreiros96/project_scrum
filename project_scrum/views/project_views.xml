@@ -1,11 +1,120 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
 <odoo>
-    <record id="project_project_kanban_inherit" model="ir.ui.view">
+
+    <!-- Project action on Kanban for showing sprints -->
+    <record id="project_kanban_inherit" model="ir.ui.view">
         <field name="name">project.project.kanban.inherit</field>
         <field name="model">project.project</field>
         <field name="inherit_id" ref="project.view_project_kanban" />
         <field name="arch" type="xml">
+            <xpath
+                expr="//div[@class='container o_kanban_card_manage_pane dropdown-menu']/div/div"
+                position="inside"
+            >
+                <div role="menuitem">
+                    <a name="action_view_sprints" type="object">Sprints</a>
+                </div>
+                <div role="menuitem">
+                    <a name="action_view_backlog" type="object">Backlog</a>
+                </div>
+            </xpath>
         </field>
     </record>
+
+    <!-- Sprint Form and Tree views -->
+    <record id="sprint_view_tree" model="ir.ui.view">
+        <field name="name">project.sprint.view.tree</field>
+        <field name="model">project.sprint</field>
+        <field name="arch" type="xml">
+            <tree string="Sprints">
+                <field name="name" />
+                <field name="project_id" />
+                <field name="date_start" />
+                <field name="date_stop" />
+            </tree>
+        </field>
+    </record>
+
+    <record id="sprint_view_form" model="ir.ui.view">
+        <field name="name">project.sprint.view.form</field>
+        <field name="model">project.sprint</field>
+        <field name="arch" type="xml">
+            <form string="Sprint">
+                <sheet>
+                    <div class="oe_title">
+                        <h1 class="d-flex flex-row">
+                            <field
+                                name="name"
+                                class="o_text_overflow"
+                                placeholder="e.g. October H1 Sprint"
+                            />
+                        </h1>
+                    </div>
+                    <group>
+                        <field name="project_id" />
+                        <field name="date_start" />
+                        <field name="date_stop" />
+                    </group>
+                    <notebook colspan="5">
+                        <page name="tasks_page" string="Tasks">
+                            <field name="task_ids">
+                                <tree string="Tasks">
+                                    <field name="company_id" invisible="1" />
+                                    <field name="project_id" invisible="1" />
+                                    <!-- <field name="project_id" invisible="1" context="{'default_project_id' : project_id or parent.project_id }"/> -->
+                                    <field name="name" />
+                                    <field name="milestone_id" />
+                                    <field name="tag_ids" widget="many2many_tags" />
+                                    <field name="stage_id" />
+                                    <field name="date_deadline" />
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Form inherit for showing the fields on tasks form-->
+    <record id="view_task_form2_inherit" model="ir.ui.view">
+        <field name="name">project.task.view.form.inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='milestone_id']" position="after">
+                <field name="sprint_id" />
+                <field name="is_scrum_task" />
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Form inherit for showing fields on projects form -->
+    <record id="edit_project_inherit" model="ir.ui.view">
+        <field name="name">project.project.view.form.inherit</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='label_tasks']" position="after">
+                <field name="is_scrum_project" />
+            </xpath>
+        </field>
+    </record>
+
+
+    <!-- Action for Showing sprints from its menuitem -->
+    <record model="ir.actions.act_window" id="action_view_sprints">
+        <field name="name">Sprints</field>
+        <field name="res_model">project.sprint</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+    <!-- Sprints menuitem -->
+    <menuitem
+        name="Sprints"
+        id="menu_sprints_tree"
+        sequence="10"
+        parent="project.menu_main_pm"
+        action="action_view_sprints"
+    />
+
 </odoo>

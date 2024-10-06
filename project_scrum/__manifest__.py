@@ -9,6 +9,6 @@
     "category": "Generic",
     "depends": ["project"],
     "license": "AGPL-3",
-    "data": ["views/project_views.xml"],
+    "data": ["security/ir.model.access.csv", "views/project_views.xml"],
     "installable": True,
 }
