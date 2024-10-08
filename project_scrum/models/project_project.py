@@ -8,7 +8,7 @@ from odoo import _, fields, models
 class ProjectProject(models.Model):
     _inherit = "project.project"
 
-    sprint_ids = fields.One2many("project.sprint", "project_id", string="Sprints")
+    sprint_ids = fields.Many2many("project.sprint", "project_id", string="Sprints")
     is_scrum_project = fields.Boolean("Uses Scrum")
 
     def action_view_sprints(self):
@@ -18,14 +18,14 @@ class ProjectProject(models.Model):
             "type": "ir.actions.act_window",
             "res_model": "project.sprint",
             "view_mode": "tree,form",
-            "domain": [("project_id", "=", self.id)],
+            "domain": [("project_ids", "in", self.id)],
             "context": {
-                "default_project_id": self.id,
+                "default_project_ids": [(6, 0, [self.id])],
                 "default_date_start": datetime.today(),
             },
         }
 
-    def action_view_backlog(self):
+    def action_view_project_backlog(self):
         self.ensure_one()
         return {
             "name": self.name + _(" Backlog"),
@@ -43,12 +43,12 @@ class ProjectProject(models.Model):
             ],
         }
 
-
 class ProjecTask(models.Model):
     _inherit = "project.task"
 
     sprint_id = fields.Many2one("project.sprint", string="Sprint")
-    is_scrum_task = fields.Boolean("Uses Scrum")
+    is_scrum_project = fields.Boolean(related="project_id.is_scrum_project")
+    is_scrum_task = fields.Boolean("Uses Scrum", default=is_scrum_project)
 
 
 class ProjectSprint(models.Model):
@@ -56,7 +56,7 @@ class ProjectSprint(models.Model):
     _description = "Project Sprints"
 
     name = fields.Char("Sprint name", required=True)
-    project_id = fields.Many2one("project.project", string="Project", required=True)
+    project_ids = fields.Many2many("project.project", "sprint_ids", string="Projects", required=True)
     task_ids = fields.One2many("project.task", "sprint_id", string="Tasks")
     date_start = fields.Date("Date Start")
     date_stop = fields.Date("Date End")

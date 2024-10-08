@@ -15,7 +15,7 @@
                     <a name="action_view_sprints" type="object">Sprints</a>
                 </div>
                 <div role="menuitem">
-                    <a name="action_view_backlog" type="object">Backlog</a>
+                    <a name="action_view_project_backlog" type="object">Backlog</a>
                 </div>
             </xpath>
         </field>
@@ -28,7 +28,7 @@
         <field name="arch" type="xml">
             <tree string="Sprints">
                 <field name="name" />
-                <field name="project_id" />
+                <field name="project_ids" widget="many2many_tags"/>
                 <field name="date_start" />
                 <field name="date_stop" />
             </tree>
@@ -51,17 +51,16 @@
                         </h1>
                     </div>
                     <group>
-                        <field name="project_id" />
+                        <field name="project_ids" widget="many2many_tags"/>
                         <field name="date_start" />
                         <field name="date_stop" />
                     </group>
                     <notebook colspan="5">
                         <page name="tasks_page" string="Tasks">
-                            <field name="task_ids">
-                                <tree string="Tasks">
+                            <field name="task_ids" context="{'default_project_id': project_ids and project_ids[0] or False}">
+                                <tree string="Tasks" editable="bottom">
                                     <field name="company_id" invisible="1" />
-                                    <field name="project_id" invisible="1" />
-                                    <!-- <field name="project_id" invisible="1" context="{'default_project_id' : project_id or parent.project_id }"/> -->
+                                    <field name="project_id" domain="[('id', 'in', parent.project_ids)]"/>
                                     <field name="name" />
                                     <field name="milestone_id" />
                                     <field name="tag_ids" widget="many2many_tags" />
@@ -108,6 +107,13 @@
         <field name="res_model">project.sprint</field>
         <field name="view_mode">tree,form</field>
     </record>
+    <record model="ir.actions.act_window" id="action_view_backlog">
+        <field name="name">Full Backlog</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">tree,form</field>
+        <!-- TODO: FIX DOMAIN -->
+        <field name="domain">['&amp;',("is_scrum_task", "=", True),'&amp;',("sprint_id", "=", False),("stage_id.fold", "!=", True)]</field>
+    </record>
     <!-- Sprints menuitem -->
     <menuitem
         name="Sprints"
@@ -115,6 +121,13 @@
         sequence="10"
         parent="project.menu_main_pm"
         action="action_view_sprints"
+    />
+    <menuitem
+        name="Full Backlog"
+        id="menu_backlog_tree"
+        sequence="10"
+        parent="project.menu_main_pm"
+        action="action_view_backlog"
     />
 
 </odoo>
