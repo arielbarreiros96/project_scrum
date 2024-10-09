@@ -2,14 +2,22 @@
 
 from datetime import datetime
 
-from odoo import _, fields, models
+from odoo import _, fields, models, api
 
 
 class ProjectProject(models.Model):
     _inherit = "project.project"
 
-    sprint_ids = fields.Many2many("project.sprint", "project_id", string="Sprints")
+    sprint_ids = fields.Many2many("project.sprint", string="Sprints", compute="_compute_sprint_ids")
     is_scrum_project = fields.Boolean("Uses Scrum")
+
+    @api.depends("task_ids.sprint_id")
+    def _compute_sprint_ids(self):
+        for project in self:
+            if project.task_ids:
+                for task in project.task_ids:
+                    if task.sprint_id and task.sprint_id not in project.sprint_ids:
+                        project.sprint_ids = [(4, task.sprint_id.id)]
 
     def action_view_sprints(self):
         self.ensure_one()
@@ -47,8 +55,15 @@ class ProjecTask(models.Model):
     _inherit = "project.task"
 
     sprint_id = fields.Many2one("project.sprint", string="Sprint")
-    is_scrum_project = fields.Boolean(related="project_id.is_scrum_project")
-    is_scrum_task = fields.Boolean("Uses Scrum", default=is_scrum_project)
+    is_scrum_task = fields.Boolean("Uses Scrum")
+
+    @api.model
+    def default_get(self, fields_list):
+        defaults = super(ProjecTask, self).default_get(fields_list)
+        if 'project_id' in defaults:
+            project = self.env['project.project'].browse(defaults['project_id'])
+            defaults['is_scrum_task'] = project.is_scrum_project
+        return defaults
 
 
 class ProjectSprint(models.Model):
@@ -56,7 +71,15 @@ class ProjectSprint(models.Model):
     _description = "Project Sprints"
 
     name = fields.Char("Sprint name", required=True)
-    project_ids = fields.Many2many("project.project", "sprint_ids", string="Projects", required=True)
+    project_ids = fields.Many2many("project.project", "sprint_ids", string="Projects", compute="_compute_project_ids")
     task_ids = fields.One2many("project.task", "sprint_id", string="Tasks")
     date_start = fields.Date("Date Start")
     date_stop = fields.Date("Date End")
+
+    @api.depends("task_ids")
+    def _compute_project_ids(self):
+        for sprint in self:
+            if sprint.task_ids:
+                for task in sprint.task_ids:
+                    if task.project_id and task.project_id not in sprint.project_ids:
+                        sprint.project_ids = [(4, task.project_id.id)]

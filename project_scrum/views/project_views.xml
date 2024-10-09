@@ -58,7 +58,7 @@
                     <notebook colspan="5">
                         <page name="tasks_page" string="Tasks">
                             <field name="task_ids" context="{'default_project_id': project_ids and project_ids[0] or False}">
-                                <tree string="Tasks" editable="bottom">
+                                <tree string="Tasks" editable="bottom" delete="0">
                                     <field name="company_id" invisible="1" />
                                     <field name="project_id" domain="[('id', 'in', parent.project_ids)]"/>
                                     <field name="name" />
@@ -75,7 +75,7 @@
         </field>
     </record>
 
-    <!-- Form inherit for showing the fields on tasks form-->
+    <!-- Form inherit for showing the fields on tasks form and tree-->
     <record id="view_task_form2_inherit" model="ir.ui.view">
         <field name="name">project.task.view.form.inherit</field>
         <field name="model">project.task</field>
@@ -88,6 +88,17 @@
         </field>
     </record>
 
+    <record id="view_task_tree2_inherit" model="ir.ui.view">
+        <field name="name">project.task.view.tree.inherit</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_tree2" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='milestone_id']" position="after">
+                <field name="sprint_id"/>
+            </xpath>
+        </field>
+    </record>
+
     <!-- Form inherit for showing fields on projects form -->
     <record id="edit_project_inherit" model="ir.ui.view">
         <field name="name">project.project.view.form.inherit</field>
@@ -96,6 +107,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='label_tasks']" position="after">
                 <field name="is_scrum_project" />
+                <field name="sprint_ids" widget="many2many_tags" attrs="{'invisible': [('is_scrum_project', '=', False)]}"/>
             </xpath>
         </field>
     </record>
@@ -111,7 +123,6 @@
         <field name="name">Full Backlog</field>
         <field name="res_model">project.task</field>
         <field name="view_mode">tree,form</field>
-        <!-- TODO: FIX DOMAIN -->
         <field name="domain">['&amp;',("is_scrum_task", "=", True),'&amp;',("sprint_id", "=", False),("stage_id.fold", "!=", True)]</field>
     </record>
     <!-- Sprints menuitem -->
