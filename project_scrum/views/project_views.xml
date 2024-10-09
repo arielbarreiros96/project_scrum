@@ -40,6 +40,9 @@
         <field name="model">project.sprint</field>
         <field name="arch" type="xml">
             <form string="Sprint">
+                <header>
+                    <field name="stage" widget="statusbar" statusbar_visible="draft,active,review,done"/>
+                </header>
                 <sheet>
                     <div class="oe_title">
                         <h1 class="d-flex flex-row">

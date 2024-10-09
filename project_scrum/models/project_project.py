@@ -75,6 +75,12 @@ class ProjectSprint(models.Model):
     task_ids = fields.One2many("project.task", "sprint_id", string="Tasks")
     date_start = fields.Date("Date Start")
     date_stop = fields.Date("Date End")
+    stage = fields.Selection(
+        [("draft", "Sprint Planning"), ("active", "Sprint Execution"), ("review", "Sprint Review"), ("done", "Sprint Retrospective"), ("cancel", "Cancelled")],
+        string="Sprint Stage",
+        default="draft",
+        required=True,
+    )
 
     @api.depends("task_ids")
     def _compute_project_ids(self):
