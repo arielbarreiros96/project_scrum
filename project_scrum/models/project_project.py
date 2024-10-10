@@ -75,7 +75,7 @@ class ProjectSprint(models.Model):
     task_ids = fields.One2many("project.task", "sprint_id", string="Tasks")
     date_start = fields.Date("Date Start")
     date_stop = fields.Date("Date End")
-    stage = fields.Selection(
+    state = fields.Selection(
         [("draft", "Sprint Planning"), ("active", "Sprint Execution"), ("review", "Sprint Review"), ("done", "Sprint Retrospective"), ("cancel", "Cancelled")],
         string="Sprint Stage",
         default="draft",
@@ -89,3 +89,23 @@ class ProjectSprint(models.Model):
                 for task in sprint.task_ids:
                     if task.project_id and task.project_id not in sprint.project_ids:
                         sprint.project_ids = [(4, task.project_id.id)]
+
+    def action_draft(self):
+        self.ensure_one()
+        self.state = "draft"
+
+    def action_start(self):
+        self.ensure_one()
+        self.state = "active"
+
+    def action_review(self):
+        self.ensure_one()
+        self.state = "review"
+
+    def action_done(self):
+        self.ensure_one()
+        self.state = "done"
+
+    def action_cancel(self):
+        self.ensure_one()
+        self.state = "cancel"
