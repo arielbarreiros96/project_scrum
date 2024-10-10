@@ -119,6 +119,9 @@ class ProjectSprint(models.Model):
     def action_done(self):
         self.ensure_one()
         self.state = "done"
+        for task in self.task_ids:
+            if not task.stage_id.fold:
+                task.sprint_id = False
 
     def action_cancel(self):
         self.ensure_one()
