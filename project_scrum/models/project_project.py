@@ -15,9 +15,16 @@ class ProjectProject(models.Model):
     def _compute_sprint_ids(self):
         for project in self:
             if project.task_ids:
+                sprint_ids = set()
                 for task in project.task_ids:
-                    if task.sprint_id and task.sprint_id not in project.sprint_ids:
-                        project.sprint_ids = [(4, task.sprint_id.id)]
+                    if task.project_id:
+                        sprint_ids.add(task.sprint_id.id)
+                if sprint_ids:
+                    project.sprint_ids = [(6, 0, list(sprint_ids))]
+                else:
+                    project.sprint_ids = [(6, 0, [])]
+            else:
+                project.sprint_ids = [(6, 0, [])]
 
     def action_view_sprints(self):
         self.ensure_one()
@@ -86,9 +93,16 @@ class ProjectSprint(models.Model):
     def _compute_project_ids(self):
         for sprint in self:
             if sprint.task_ids:
+                project_ids = set()
                 for task in sprint.task_ids:
-                    if task.project_id and task.project_id not in sprint.project_ids:
-                        sprint.project_ids = [(4, task.project_id.id)]
+                    if task.project_id:
+                        project_ids.add(task.project_id.id)
+                if project_ids:
+                    sprint.project_ids = [(6, 0, list(project_ids))]
+                else:
+                    sprint.project_ids = [(6, 0, [])]
+            else:
+                sprint.project_ids = [(6, 0, [])]
 
     def action_draft(self):
         self.ensure_one()
